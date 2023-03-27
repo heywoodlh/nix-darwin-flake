@@ -96,7 +96,7 @@ In `./hosts/m2-macbook-air.nix`, we can define which configurations we want to s
 
 Currently, the Flake contains the following example configurations that are in the [./roles](./roles) directory (listed in no particular order):
 
-- User settings: [./roles/user.nix](./roles/user.nix)
+- User settings: [./roles/users](./roles/users)
 - Configuring preferred MacOS settings: [./roles/defaults.nix](./roles/defaults.nix)
 - Homebrew packages and settings:  [./roles/brew.nix](./roles/brew.nix)
 - Some network settings:  [./roles/network.nix](./roles/network.nix)
