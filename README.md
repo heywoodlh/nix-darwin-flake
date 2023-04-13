@@ -86,7 +86,6 @@ In `./hosts/m2-macbook-air.nix`, we can define which configurations we want to s
     ../roles/brew.nix
     ../roles/yabai.nix
     ../roles/network.nix
-    ../roles/users/${username}.nix
     ../roles/home-manager/settings.nix
   ];
 ...
@@ -120,8 +119,6 @@ If you want to add a new MacOS configuration, create a new output for your new b
 Then, create a new file in `./hosts/mac-mini.nix` with the following configuration:
 
 ```
-{ config, pkgs, lib, home-manager, nur, ... }:
-
 let
   hostname = "mac-mini";
   username = "heywoodlh";
@@ -132,9 +129,10 @@ in {
     ../roles/brew.nix
     ../roles/yabai.nix
     ../roles/network.nix
-    ../roles/users/${username}.nix
     ../roles/home-manager/settings.nix
   ];
+  # Define user settings
+  users.users.${username} = import ../roles/user.nix { inherit config; inherit pkgs; };
 
   # Set home-manager configs for username
   home-manager.users.${username} = import ../roles/home-manager/user.nix;
@@ -142,11 +140,9 @@ in {
   # Set hostname
   networking.hostName = "${hostname}";
 
-  # Always show menu bar on M2 Macbook Air 
-  system.defaults.NSGlobalDomain._HIHideMenuBar = lib.mkForce false;
-
   system.stateVersion = 4;
 }
+
 ```
 
 Once your configuration is set, you can switch to the new `mac-mini` output with these commands (while in the root directory of this repository):
@@ -154,9 +150,3 @@ Once your configuration is set, you can switch to the new `mac-mini` output with
 ```
 darwin-rebuild switch --flake .#mac-mini
 ```
-
-## Add a new user configuration
-
-By default, this example creates a user named `heywoodlh`, defined in `./roles/users/heywoodlh.nix`.
-
-Let's say we want a new user named `example`, copy `./roles/users/heywoodlh.nix` to `./roles/users/example.nix`. Then edit any references to `heywoodlh` to `example`. 
