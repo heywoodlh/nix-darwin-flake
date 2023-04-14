@@ -119,6 +119,8 @@ If you want to add a new MacOS configuration, create a new output for your new b
 Then, create a new file in `./hosts/mac-mini.nix` with the following configuration:
 
 ```
+{ config, pkgs, lib, home-manager, nur, ... }:
+
 let
   hostname = "mac-mini";
   username = "heywoodlh";
