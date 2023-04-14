@@ -3,16 +3,14 @@
 {
   description = "Spencer Heywood";
   name = "Spencer Heywood";
-  shell = pkgs.powershell;
+  shell = pkgs.bash;
+  # These packages will only be installed for your user
+  # The binaries will be available in the following path: /etc/profiles/per-user/$USER/bin
   packages = [
+    pkgs.bash
     pkgs.gcc
     pkgs.git
     pkgs.gnupg
-    pkgs.pomerium-cli
-    pkgs.powershell
-    pkgs.python310Packages.upass
-    pkgs.skhd
     pkgs.tmux
-    pkgs.wireguard-tools
   ];
 }
