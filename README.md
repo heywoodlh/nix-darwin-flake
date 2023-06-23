@@ -2,6 +2,19 @@ This is a boilerplate for someone wanting to build a Nix-Darwin flake.
 
 This is intended to be used as a starting point, so it would make most sense, to create a new template from this repository and modify it to fit your needs.
 
+## Features:
+
+Codifies the following settings (in no particular order):
+- Basic user configuration in [roles/user.nix](./roles/user.nix)
+- Installed applications with `brew` in [roles/brew.nix](./roles/brew.nix)
+- Tiling windows and custom keyboard shortcuts with Yabai and SKHD in [roles/yabai.nix](./roles/yabai.nix)
+- Firefox configuration with Home-Manager in [roles/home-manager/user.nix](./roles/home-manager/user.nix):
+  - Default Firefox profile named `default`: https://github.com/heywoodlh/nix-darwin-flake/blob/c4f90bdf0d6d79de791d14fa59a1b648035fa838/roles/home-manager/user.nix#L10-L121
+  - Better Firefox privacy tweaks: https://github.com/heywoodlh/nix-darwin-flake/blob/c4f90bdf0d6d79de791d14fa59a1b648035fa838/roles/home-manager/user.nix#L70-L121
+  - Minimal Firefox appearance tweaks with UserChrome.css: https://github.com/heywoodlh/nix-darwin-flake/blob/c4f90bdf0d6d79de791d14fa59a1b648035fa838/roles/home-manager/user.nix#L25-L67
+  - Installed Firefox Extensions with NUR: https://github.com/heywoodlh/nix-darwin-flake/blob/c4f90bdf0d6d79de791d14fa59a1b648035fa838/roles/home-manager/user.nix#L13-L24
+- Other various settings in [roles](./roles)
+
 ## Requirements:
 
 - Relatively modern MacOS version
@@ -17,6 +30,66 @@ git clone https://github.com/heywoodlh/nix-darwin-flake
 cd nix-darwin-flake
 darwin-rebuild switch --flake .#m2-macbook-air
 ``` 
+
+## Making this your own:
+
+First, create a new repository using this repository as your template, using the following link: 
+
+https://github.com/heywoodlh/nix-darwin-flake/generate
+
+Create a new MacOS configuration/output for your own machine in the `darwinConfigurations` section in `flake.nix`. Suppose that we wanted to name this output `mac-mini`, we would create an output in the `darwinConfigurations` section like this:
+
+```
+      # M1 mac-mini
+      "mac-mini" = darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        specialArgs = inputs;
+        modules = [ ./hosts/mac-mini.nix ];
+      };
+```
+
+Then, create a new file in `./hosts/mac-mini.nix` with the following configuration (modify the `hostname` and `username` variables in the `let` section to match your desired values):
+
+```
+{ config, pkgs, lib, home-manager, nur, ... }:
+
+let
+  hostname = "mac-mini";
+  username = "heywoodlh";
+in {
+  imports = [
+    ../roles/m1.nix
+    ../roles/defaults.nix
+    ../roles/brew.nix
+    ../roles/yabai.nix
+    ../roles/network.nix
+    ../roles/home-manager/settings.nix
+  ];
+  # Define user settings
+  users.users.${username} = import ../roles/user.nix { inherit config; inherit pkgs; };
+
+  # Set home-manager configs for username
+  home-manager.users.${username} = import ../roles/home-manager/user.nix;
+
+  # Set hostname
+  networking.hostName = "${hostname}";
+
+  system.stateVersion = 4;
+}
+
+```
+
+Once your configuration is set, you can switch to the new `mac-mini` output with these commands (while in the root directory of this repository):
+
+```
+darwin-rebuild switch --flake .#mac-mini
+```
+
+Once your configuration is working, start modifying your new repository with your desired Nix-Darwin settings! Here are some resources for getting started:
+- Nix-Darwin configuration options: https://daiderd.com/nix-darwin/manual/index.html#sec-options
+- Home-Manager configuration options (for stuff contained in the [roles/home-manager](./roles/home-manager) folder): https://nix-community.github.io/home-manager/options.html
+
+> Note: The way this repository is built, any Nix-Darwin settings you want shared or to be re-used between your outputs should go in the [roles](./roles) folder and any Nix-Darwin configuration settings that are specific to a single machine should go in its corresponding file in the [hosts](./hosts) folder.
 
 ## What is a Nix Flake and how does it work?
 
@@ -103,50 +176,3 @@ Currently, the Flake contains the following example configurations that are in t
 - Some settings for M1/M2 devices: [./roles/m1.nix](./roles/m1.nix)
 - [Home-Manager](https://github.com/nix-community/home-manager) configurations: [./roles/home-manager](./roles/home-manager)
 
-## Creating a new MacOS configuration
-
-If you want to add a new MacOS configuration, create a new output for your new build in `flake.nix`. Suppose that we wanted to name this output `mac-mini`, we would create an output in the `darwinConfigurations` declaration like this:
-
-```
-      # M1 mac-mini
-      "mac-mini" = darwin.lib.darwinSystem {
-        system = "aarch64-darwin";
-        specialArgs = inputs;
-        modules = [ ./hosts/mac-mini.nix ];
-      };
-```
-
-Then, create a new file in `./hosts/mac-mini.nix` with the following configuration:
-
-```
-let
-  hostname = "mac-mini";
-  username = "heywoodlh";
-in {
-  imports = [
-    ../roles/m1.nix
-    ../roles/defaults.nix
-    ../roles/brew.nix
-    ../roles/yabai.nix
-    ../roles/network.nix
-    ../roles/home-manager/settings.nix
-  ];
-  # Define user settings
-  users.users.${username} = import ../roles/user.nix { inherit config; inherit pkgs; };
-
-  # Set home-manager configs for username
-  home-manager.users.${username} = import ../roles/home-manager/user.nix;
-
-  # Set hostname
-  networking.hostName = "${hostname}";
-
-  system.stateVersion = 4;
-}
-
-```
-
-Once your configuration is set, you can switch to the new `mac-mini` output with these commands (while in the root directory of this repository):
-
-```
-darwin-rebuild switch --flake .#mac-mini
-```
