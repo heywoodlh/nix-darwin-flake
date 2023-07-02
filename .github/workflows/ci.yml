@@ -16,20 +16,23 @@ jobs:
   build-macos-env:
     name: Build macOS Nix env
     runs-on: macos-latest
-  
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-  
+
     - name: Install Nix
-      uses: cachix/install-nix-action@v18
+      uses: DeterminateSystems/nix-installer-action@main
+
+    - name: Setup Nix Magic Cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
 
     - name: If scheduled or manually triggered, update inputs again
       if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
       run: |
         nix flake update
 
-    - name: Build macos-desktop output 
+    - name: Build macos-desktop output
       run: |
         # Create /run directory
         echo -e "run\tprivate/var/run" | sudo tee -a /etc/synthetic.conf >/dev/null
@@ -43,5 +46,5 @@ jobs:
       with:
         add: 'flake.lock'
         author_name: 'github-actions'
-        author_email: 'github-actions@github.com' 
+        author_email: 'github-actions@github.com'
 
